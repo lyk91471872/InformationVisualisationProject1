@@ -4,7 +4,6 @@
 
 import * as d3 from "npm:d3";
 import * as Inputs from "npm:@observablehq/inputs";
-import { prepareRows, computeNextDayReturns } from "./lib/transforms.js";
 /*
 const raw  = await FileAttachment("./data/nvda_2020_2022.csv").csv({ typed: true });
 const rows = computeNextDayReturns(prepareRows(raw));
