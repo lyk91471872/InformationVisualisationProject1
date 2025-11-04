@@ -1,3 +1,4 @@
+# src/Q5.py
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -10,45 +11,26 @@ EARNINGS = [
     "2021-02-24","2021-05-26","2021-08-18","2021-11-17",
     "2022-02-16","2022-05-25","2022-08-24","2022-11-16"
 ]
+earn = pd.to_datetime(EARNINGS)
 
-earn_ts = pd.to_datetime(EARNINGS, utc=False)
-
-df = pd.read_csv(INPUT, parse_dates=["QUOTE_DATE"])
+df = pd.read_csv(INPUT, parse_dates=["QUOTE_DATE"], low_memory=False)
 if df["QUOTE_DATE"].dt.tz is not None:
     df["QUOTE_DATE"] = df["QUOTE_DATE"].dt.tz_localize(None)
 
-df = df[
-    df["option_type"].notna() &
-    df["QUOTE_DATE"].notna() &
-    df["DTE_bin"].notna() &
-    df["log_m_bin"].notna() &
-    pd.to_numeric(df["return_exp"], errors="coerce").notna()
-].copy()
+cols = ["option_type","QUOTE_DATE","DTE_bin","log_m_bin","return_exp"]
+df = df[cols].dropna()
+df["return_exp"] = pd.to_numeric(df["return_exp"], errors="coerce")
 
-def nearest_days(ts):
-    if pd.isna(ts):
-        return np.nan
-    diffs = (earn_ts - pd.Timestamp(ts))
-    diffs = diffs.map(lambda x: x.days)
-    return float(np.min(np.abs(diffs)))
-
-df["days_to_earn"] = df["QUOTE_DATE"].apply(nearest_days)
+dates = df["QUOTE_DATE"].values.astype("datetime64[D]")
+earn_arr = earn.values.astype("datetime64[D]")
+dist = np.abs(dates[:, None] - earn_arr[None, :]).astype("timedelta64[D]").astype(int)
+df["days_to_earn"] = dist.min(axis=1)
 df["near_earn"] = df["days_to_earn"] <= 3
 
-rows = []
-for (opt, near, dte, logm), g in df.groupby(["option_type","near_earn","DTE_bin","log_m_bin"], observed=True):
-    ret = pd.to_numeric(g["return_exp"], errors="coerce")
-    ret = ret[np.isfinite(ret)]
-    if ret.size == 0:
-        continue
-    rows.append({
-        "option_type": opt,
-        "near_earn": bool(near),
-        "DTE_bin": dte,
-        "log_m_bin": logm,
-        "n": int(ret.size),
-        "mean_return": float(ret.mean())
-    })
-
-pd.DataFrame(rows).to_csv(OUTPUT, index=False)
-print(f"Wrote {OUTPUT.resolve()}")
+agg = (
+    df.groupby(["option_type","near_earn","DTE_bin","log_m_bin"], observed=True, sort=False)
+    .agg(n=("return_exp","count"), mean_return=("return_exp","mean"))
+    .reset_index()
+)
+agg.to_csv(OUTPUT, index=False)
+print(f"Saved {OUTPUT} with {len(agg):,} rows")
