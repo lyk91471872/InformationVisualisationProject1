@@ -2,4 +2,4 @@
 /dist/
 node_modules/
 yarn-error.log
-src/data/nvda_2020_2022.csv
+src/data/

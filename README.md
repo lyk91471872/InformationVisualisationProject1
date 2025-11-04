@@ -1,59 +1,45 @@
-# Pj1
+# NVDA Options Data Explorer (Observable Framework)
 
-This is an [Observable Framework](https://observablehq.com/framework/) app. To install the required dependencies, run:
+A clean, multi-page Observable Framework project that answers domain questions with analysis tables and sketch visualizations.
 
-```
-npm install
-```
-
-Then, to start the local preview server, run:
+## Structure
 
 ```
-npm run dev
+nvda-explorer/
+  package.json
+  observablehq.config.js
+  src/
+    index.md
+    styles.css
+    lib/
+      utils.js
+      transforms.js
+    data/
+      nvda_2020_2022.csv            # your dataset (copied here)
+    q1_moneyness_dte.md
+    q2_risk_tradeoff.md
+    q3_stability_over_time.md
+    q4_greeks_vs_returns.md
+    q5_earnings_effects.md
 ```
 
-Then visit <http://localhost:3000> to preview your app.
+## Run
 
-For more, see <https://observablehq.com/framework/getting-started>.
+1. Install Node.js 18+.
+2. `npm install -g @observablehq/framework` (or use the local dependency via `npx`).
+3. In this folder: `npm install`
+4. Start the dev server: `npm run dev`
+5. Open the local URL shown in the terminal.
 
-## Project structure
+## Notes
 
-A typical Framework project looks like this:
-
-```ini
-.
-├─ src
-│  ├─ components
-│  │  └─ timeline.js           # an importable module
-│  ├─ data
-│  │  ├─ launches.csv.js       # a data loader
-│  │  └─ events.json           # a static data file
-│  ├─ example-dashboard.md     # a page
-│  ├─ example-report.md        # another page
-│  └─ index.md                 # the home page
-├─ .gitignore
-├─ observablehq.config.js      # the app config file
-├─ package.json
-└─ README.md
-```
-
-**`src`** - This is the “source root” — where your source files live. Pages go here. Each page is a Markdown file. Observable Framework uses [file-based routing](https://observablehq.com/framework/project-structure#routing), which means that the name of the file controls where the page is served. You can create as many pages as you like. Use folders to organize your pages.
-
-**`src/index.md`** - This is the home page for your app. You can have as many additional pages as you’d like, but you should always have a home page, too.
-
-**`src/data`** - You can put [data loaders](https://observablehq.com/framework/data-loaders) or static data files anywhere in your source root, but we recommend putting them here.
-
-**`src/components`** - You can put shared [JavaScript modules](https://observablehq.com/framework/imports) anywhere in your source root, but we recommend putting them here. This helps you pull code out of Markdown files and into JavaScript modules, making it easier to reuse code across pages, write tests and run linters, and even share code with vanilla web applications.
-
-**`observablehq.config.js`** - This is the [app configuration](https://observablehq.com/framework/config) file, such as the pages and sections in the sidebar navigation, and the app’s title.
-
-## Command reference
-
-| Command           | Description                                              |
-| ----------------- | -------------------------------------------------------- |
-| `npm install`            | Install or reinstall dependencies                        |
-| `npm run dev`        | Start local preview server                               |
-| `npm run build`      | Build your static site, generating `./dist`              |
-| `npm run deploy`     | Deploy your app to Observable                            |
-| `npm run clean`      | Clear the local data loader cache                        |
-| `npm run observable` | Run commands like `observable help`                      |
+- Returns are **next-day change in mid price** within each contract key. Mid is computed from `(bid+ask)/2` if `mid` is missing.
+- Moneyness = `strike / underlying_last` (fallbacks: `underlying_price`, `underlying_close`). DTE = days from `quote_date` to `expiration`.
+- Binning: Moneyness and DTE are bucketed for heatmaps and bubble plots.
+- For earnings analysis, provide a CSV at `src/data/earnings_nvda_2020_2022.csv` with a single header `date` and rows like:
+  ```
+  date
+  2020-02-13
+  2020-05-21
+  ```
+  If absent, the page gracefully skips proximity tagging.

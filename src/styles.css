@@ -1,0 +1,7 @@
+:root{
+  --max-width: 1200px;
+}
+main { max-width: var(--max-width); }
+.table-note { font-size: 0.9rem; color: #444; margin-top: .25rem; }
+.small { font-size: 0.85rem; color: #666; }
+hr { margin: 2rem 0; }
