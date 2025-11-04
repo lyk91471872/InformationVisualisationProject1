@@ -1,4 +1,3 @@
-# src/Q4.py
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -20,11 +19,9 @@ def detect_col(prefix):
             return c
     return None
 
-# Detect all available columns
 cols_detected = {g: detect_col(g) for g in ["delta","gamma","theta","vega","iv"]}
 print("Detected Greek columns:", cols_detected)
 
-# Build unified numeric columns
 for g, col in cols_detected.items():
     if col:
         df[g] = pd.to_numeric(df[col], errors="coerce")

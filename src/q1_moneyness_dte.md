@@ -1,5 +1,4 @@
 # Q1 · Which moneyness & DTE combos have higher expected return?
-# · Moneyness × DTE → hold-till-expiration return
 
 ```js
 import * as Inputs from "npm:@observablehq/inputs";
@@ -15,8 +14,6 @@ const calls = q1.filter(d => d.option_type === "CALL" && d.DTE_bin && d.log_m_bi
 const puts  = q1.filter(d => d.option_type === "PUT"  && d.DTE_bin && d.log_m_bin && Number.isFinite(d.return_exp));
 
 const sizeScale = { range: [200, 3000] };
-
-
 ```
 
 ```js
@@ -42,8 +39,6 @@ const callBubble = vl
   );
 
 display(await callBubble.render());
-
-
 ```
 
 ```js
@@ -69,6 +64,4 @@ const putBubble = vl
   );
 
 display(await putBubble.render());
-
-
 ```

@@ -5,10 +5,8 @@ and plot risk vs return.
 
 ```js
 
-// load the pre-aggregated csv from python (q2_make_csv.py)
 const q2 = await FileAttachment("./data/q2.csv").csv({ typed: true });
 
-// keep only usable rows
 const q2filtered = q2.filter(d => {
   const n  = +d.n;
   const mu = +d.mean_return;
@@ -18,14 +16,10 @@ const q2filtered = q2.filter(d => {
          Number.isFinite(sd) && sd > 0;
 });
 
-// split
 const calls = q2filtered.filter(d => d.option_type === "CALL");
 const puts  = q2filtered.filter(d => d.option_type === "PUT");
 
-// bubble size
-const sizeScale = { range: [200, 3500] };
-
-
+const sizeScale = { range: [100, 800] };
 ```
 
 ```js
@@ -62,8 +56,6 @@ const callRisk = vl
   );
 
 display(await callRisk.render());
-
-
 ```
 
 ```js
@@ -100,6 +92,4 @@ const putRisk = vl
   );
 
 display(await putRisk.render());
-
-
 ```
