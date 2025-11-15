@@ -8,36 +8,22 @@ const logOrder = ["≤-0.6","-0.6 – -0.3","-0.3 – -0.1","-0.1 – 0.1","0.1 
 
 const calls = q5.filter(d => d.option_type === "CALL");
 const puts  = q5.filter(d => d.option_type === "PUT");
+```
 
-const callChart = vl.vconcat(
-  vl.markCircle({opacity:0.9})
-    .data(calls)
-    .encode(
-      vl.column({field:"near_earn", type:"nominal", title:"Earnings proximity"}),
-      vl.x({field:"DTE_bin", type:"ordinal", sort:dteOrder, title:"DTE bin"}),
-      vl.y({field:"log_m_bin", type:"ordinal", sort:logOrder, title:"log moneyness bin"}),
-      vl.size({field:"n", type:"quantitative", scale:{range:[150,1500]}, legend:{title:"n"}}),
-      vl.color({field:"mean_return", type:"quantitative", scale:{scheme:"inferno", domainMid:0}, legend:{title:"mean return"}})
-    )
-    .width(240)
-    .height(240)
-).title("CALL · Mean Return vs Earnings Dates");
-display(await callChart.render());
+```js
+import { q5Grid } from "./charts/q5Grid.js";
 
-const putChart = vl.vconcat(
-  vl.markCircle({opacity:0.9})
-    .data(puts)
-    .encode(
-      vl.column({field:"near_earn", type:"nominal", title:"Earnings proximity"}),
-      vl.x({field:"DTE_bin", type:"ordinal", sort:dteOrder, title:"DTE bin"}),
-      vl.y({field:"log_m_bin", type:"ordinal", sort:logOrder, title:"log moneyness bin"}),
-      vl.size({field:"n", type:"quantitative", scale:{range:[150,1500]}, legend:{title:"n"}}),
-      vl.color({field:"mean_return", type:"quantitative", scale:{scheme:"inferno", domainMid:0}, legend:{title:"mean return"}})
-    )
-    .width(240)
-    .height(240)
-).title("PUT · Mean Return vs Earnings Dates");
-display(await putChart.render());
+display(q5Grid({
+  data: calls,
+  dteOrder,
+  logOrder,
+  title: "CALL · Mean Return vs Earnings Dates"
+}));
 
-
+display(q5Grid({
+  data: puts,
+  dteOrder,
+  logOrder,
+  title: "PUT · Mean Return vs Earnings Dates"
+}));
 ```
