@@ -1,7 +1,41 @@
-:root{
+:root { 
   --max-width: 1200px;
+
+  --bg-color: #ffffff;
+  --text-color: #222222;
+  --muted-text-color: #666666;
+  --note-text-color: #444444;
 }
-main { max-width: var(--max-width); }
-.table-note { font-size: 0.9rem; color: #444; margin-top: .25rem; }
-.small { font-size: 0.85rem; color: #666; }
-hr { margin: 2rem 0; }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #121212;
+    --text-color: #f5f5f5;
+    --muted-text-color: #cccccc;
+    --note-text-color: #dddddd;
+  }
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+main { 
+  max-width: var(--max-width); 
+}
+
+.table-note { 
+  font-size: 0.9rem; 
+  color: var(--note-text-color); 
+  margin-top: .25rem; 
+}
+
+.small { 
+  font-size: 0.85rem; 
+  color: var(--muted-text-color); 
+}
+
+hr { 
+  margin: 2rem 0; 
+}
