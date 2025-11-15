@@ -1,90 +1,67 @@
-// legends.js
-import * as d3 from "d3";
-import { readTheme } from "../theme.js";
+import * as d3 from "npm:d3";
 
-export function drawColorLegend(svg, {
-  x, y, height = 140, width = 18,
-  scale,
-  label = "Color",
-  theme
+// Continuous gradient + axis (diverging or linear)
+export function gradientLegend(svg, {
+  x, y, width = 18, height = 160,
+  scale, ticks = 5, tickFormat = d3.format(".2f"),
+  title = ""
 }) {
-  const id = "grad-" + Math.random().toString(36).slice(2);
-
   const defs = svg.append("defs");
-  const gradient = defs.append("linearGradient")
-    .attr("id", id)
-    .attr("x1", "0%").attr("y1", "100%")
-    .attr("x2", "0%").attr("y2", "0%");
+  const gradId = `grad-${Math.random().toString(36).slice(2)}`;
+  const grad = defs.append("linearGradient")
+    .attr("id", gradId).attr("x1","0").attr("x2","0").attr("y1","1").attr("y2","0");
 
-  const [lo, hi] = scale.domain();
-  const n = 16;
+  const domain = scale.domain();
+  const a = domain[0], b = domain[domain.length - 1];
+  const steps = 120;
+  for (let i=0;i<=steps;i++){
+    const t = i/steps;
+    const v = a + t*(b-a);
+    grad.append("stop").attr("offset", `${t*100}%`).attr("stop-color", scale(v));
+  }
 
-  d3.range(n).forEach(i => {
-    const t = i / (n - 1);
-    gradient.append("stop")
-      .attr("offset", `${t * 100}%`)
-      .attr("stop-color", scale(lo + (hi - lo) * t));
-  });
-
-  svg.append("text")
-    .attr("x", x)
-    .attr("y", y - 8)
-    .style("font-weight", "600")
-    .style("fill", theme.fg)
-    .style("font-family", theme.font)
-    .text(label);
+  if (title) {
+    svg.append("text")
+      .attr("x", x).attr("y", y-8)
+      .attr("font-size", 12).attr("font-weight", 600)
+      .text(title);
+  }
 
   svg.append("rect")
-    .attr("x", x)
-    .attr("y", y)
-    .attr("width", width)
-    .attr("height", height)
-    .attr("fill", `url(#${id})`);
+    .attr("x", x).attr("y", y)
+    .attr("width", width).attr("height", height)
+    .attr("stroke", "#ddd").attr("fill", `url(#${gradId})`);
 
-  const axis = d3.axisRight(
-    d3.scaleLinear().domain([lo, hi]).range([height, 0])
-  ).ticks(6);
-
-  const g = svg.append("g")
-    .attr("transform", `translate(${x + width},${y})`)
-    .call(axis);
-
-  g.selectAll("text")
-    .style("fill", theme.fg)
-    .style("font-family", theme.font);
-
-  g.selectAll(".domain, .tick line")
-    .style("stroke", theme.fg);
+  const axisScale = d3.scaleLinear().domain([a, b]).range([y+height, y]);
+  svg.append("g")
+    .attr("transform", `translate(${x+width+5},0)`)
+    .call(d3.axisRight(axisScale).ticks(ticks).tickFormat(tickFormat))
+    .selectAll("text").attr("font-size", 11);
 }
 
-export function drawSizeLegend(svg, {
-  x, y, scale,
-  values = [], label = "Size",
-  theme
+// Three-circle size legend
+export function sizeLegend(svg, {
+  x, y, r, nMax, label = "n",
+  steps = [0.25, 0.6, 1]
 }) {
-  svg.append("text")
-    .attr("x", x)
-    .attr("y", y - 10)
-    .style("font-weight", "600")
-    .style("fill", theme.fg)
-    .style("font-family", theme.font)
+  const values = steps.map(t => Math.round(t*nMax));
+  const g = svg.append("g").attr("transform", `translate(${x},${y})`);
+
+  g.append("text")
+    .attr("x", 0).attr("y", -12)
+    .attr("font-size", 12).attr("font-weight", 600)
     .text(label);
 
-  values.forEach((v, i) => {
-    const cy = y + i * 40;
+  const cx = r(nMax), rowGap = 44;
+  const rows = g.selectAll("g.row").data(values).join("g")
+    .attr("class","row").attr("transform",(d,i)=>`translate(0,${i*rowGap})`);
 
-    svg.append("circle")
-      .attr("cx", x + 15)
-      .attr("cy", cy)
-      .attr("r", scale(v))
-      .attr("fill", theme.fg)
-      .attr("opacity", 0.25);
+  rows.append("circle")
+    .attr("cx", cx).attr("cy", 0).attr("r", d => r(d))
+    .attr("fill","none").attr("stroke","#444");
 
-    svg.append("text")
-      .attr("x", x + 40)
-      .attr("y", cy + 5)
-      .style("fill", theme.fg)
-      .style("font-family", theme.font)
-      .text(v.toFixed(3));
-  });
+  rows.append("text")
+    .attr("x", cx + r(nMax) + 10).attr("y", 4)
+    .attr("font-size", 12)
+    .text(d => d3.format(",")(d));
 }
