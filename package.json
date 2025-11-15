@@ -12,8 +12,8 @@
     "@observablehq/framework": "^1.13.3"
   },
   "devDependencies": {
-    "rimraf": "^5.0.5",
     "d3": "^7.9.0",
+    "rimraf": "^5.0.5",
     "vega": "^5",
     "vega-lite": "^5",
     "vega-lite-api": "^5"

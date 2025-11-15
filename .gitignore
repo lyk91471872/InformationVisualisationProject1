@@ -4,3 +4,4 @@ node_modules/
 yarn-error.log
 src/data/
 src/.observablehq/cache/
+src/scripts/__pycache__
