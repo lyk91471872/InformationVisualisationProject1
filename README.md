@@ -37,5 +37,4 @@ src/
   q5_earnings_effects.md             # Observable page
 
   styles.css
-  package.json
 ```
