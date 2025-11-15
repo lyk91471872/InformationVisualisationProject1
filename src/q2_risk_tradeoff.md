@@ -35,7 +35,12 @@ function renderRisk(data, {title}) {
   const r = d3.scaleSqrt().domain([0, nMax]).range([3, 15]);
   const color = d3.scaleSequential(d3.interpolateInferno).domain([cMin, cMax]);
 
-  const svg = d3.create("svg").attr("viewBox", [0, 0, W, H]).attr("width", W).attr("height", H);
+  //const svg = d3.create("svg").attr("viewBox", [0, 0, W, H]).attr("width", W).attr("height", H);
+  const svg = d3.create("svg")
+    .attr("viewBox", [0,0,W,H])
+    .attr("width", W)
+    .attr("height", H)
+    .style("color", "var(--text-color)");
 
   svg.append("text")
     .attr("x", m.left).attr("y", 24)
@@ -161,6 +166,8 @@ function renderRisk(data, {title}) {
     .attr("font-size", 12)
     .text(d => d3.format(",")(d));
 
+  svg.selectAll("text").attr("fill", "currentColor");
+  
   return svg.node();
 }
 

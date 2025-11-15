@@ -42,7 +42,12 @@ function renderFacetGrid(rows, {title}) {
   const absMax = d3.max(rows, d => Math.abs(d.mean_return)) ?? 1e-6;
   const color = d3.scaleDiverging(d3.interpolatePRGn).domain([-absMax, 0, absMax]);
 
-  const svg = d3.create("svg").attr("width", W).attr("height", H);
+  //const svg = d3.create("svg").attr("width", W).attr("height", H);
+  const svg = d3.create("svg")
+    .attr("viewBox", [0,0,W,H])
+    .attr("width", W)
+    .attr("height", H)
+    .style("color", "var(--text-color)");
 
   svg.append("text")
     .attr("x", m.left)
@@ -160,6 +165,8 @@ function renderFacetGrid(rows, {title}) {
     .attr("font-size", 12)
     .text(d => d3.format(",")(d));
 
+  svg.selectAll("text").attr("fill", "currentColor");
+  
   return svg.node();
 }
 
