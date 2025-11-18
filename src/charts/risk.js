@@ -11,7 +11,7 @@ export function renderRiskReturnScatter(data, {
   sizeField = "n",
   width = 900, height = 520,
   margin = {top: 50, right: 280, bottom: 56, left: 70},
-  sizeRange = [6, 28],
+  sizeRange = [3, 15],
   colorScheme = d3.interpolateInferno
 } = {}) {
   const {svg, root, W, H, m} = svgWithMargin({width, height, margin});

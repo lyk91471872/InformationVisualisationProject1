@@ -16,7 +16,7 @@ export function renderGreeksScatter(data, {
   colorLabel = "Implied Volatility",
   width = 860, height = 520,
   margin = {top: 50, right: 280, bottom: 56, left: 70},
-  sizeRange = [6, 26],
+  sizeRange = [1, 12],
   colorScheme = d3.interpolateInferno,
   sizeAbs = true   // take absolute value for size encodings (Γ, θ)
 } = {}) {
