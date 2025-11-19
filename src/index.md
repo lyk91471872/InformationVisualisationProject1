@@ -51,6 +51,11 @@ for (const col of numericCols) {
 
 ---
 
+## Strike Map
+This tool is helpful for most of the questions. The plots for the individual questions only care about the moneyness because it's a more abstract concept and thus can be better generalized to any underlying asset at any time, but we do need this tool to intuitively map moneyness to strike price at specific underlying stock prices, so that our observation can make sense in real world market.
+
+The grid is for quick reference and the tooltip shows the exact values.
+
 ```js
 import { strikeMap } from "./charts/index.js";
 
