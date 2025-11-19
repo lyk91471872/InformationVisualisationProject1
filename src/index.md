@@ -48,3 +48,20 @@ for (const col of numericCols) {
 - [Q3 · Stability Over Time](./q3_stability_over_time)
 - [Q4 · Greeks vs Returns](./q4_greeks_vs_returns)
 - [Q5 · Earnings Effects](./q5_earnings_effects)
+
+---
+
+```js
+import { strikeMap } from "./charts/index.js";
+
+display(
+  strikeMap({
+    width: 960,
+    height: 260,
+    sMin: 100,
+    sMax: 300,
+    sBins: 20,
+    heatResolution: 80
+  })
+);
+```
