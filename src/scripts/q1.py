@@ -11,16 +11,25 @@ def main():
 
     df = pd.read_csv(INPUT)
 
-    needed_cols = ["option_type", "DTE_bin", "log_m_bin", "return_exp"]
-    missing = [c for c in needed_cols if c not in df.columns]
+    required = ["DTE_bin", "log_m_bin", "return_exp_call", "return_exp_put"]
+    missing = [c for c in required if c not in df.columns]
     if missing:
-        raise KeyError(f"Preprocessed CSV is missing columns needed by Q1: {missing}")
+        raise KeyError(f"Preprocessed CSV missing: {missing}")
 
-    q1 = df[needed_cols].copy()
+    call_part = df[["DTE_bin", "log_m_bin", "return_exp_call"]].copy()
+    call_part["option_type"] = "CALL"
+    call_part["return_exp"] = call_part["return_exp_call"]
+    call_part = call_part[["option_type", "DTE_bin", "log_m_bin", "return_exp"]]
+
+    put_part = df[["DTE_bin", "log_m_bin", "return_exp_put"]].copy()
+    put_part["option_type"] = "PUT"
+    put_part["return_exp"] = put_part["return_exp_put"]
+    put_part = put_part[["option_type", "DTE_bin", "log_m_bin", "return_exp"]]
+
+    q1 = pd.concat([call_part, put_part], ignore_index=True)
 
     q1 = q1[
-        q1["option_type"].notna()
-        & q1["DTE_bin"].notna()
+        q1["DTE_bin"].notna()
         & q1["log_m_bin"].notna()
         & np.isfinite(pd.to_numeric(q1["return_exp"], errors="coerce"))
     ].copy()
