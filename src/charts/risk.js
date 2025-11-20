@@ -62,6 +62,8 @@ export function renderRiskReturnScatter(data, {
       .attr("stroke", "#000").attr("stroke-opacity", 0.15)
     .append("title")
       .text(d => [
+        `DTE: ${d.DTE_bin}`,
+        `log m bin: ${d.log_m_bin}`,
         `risk: ${d3.format(".3f")(+d[xField])}`,
         `return: ${d3.format(".3f")(+d[yField])}`,
         `n: ${d3.format(",")(+d[sizeField])}`,

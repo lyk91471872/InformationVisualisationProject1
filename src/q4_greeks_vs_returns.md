@@ -1,5 +1,9 @@
 # Q4 · How are Greeks related to returns?
 
+Across both calls and puts, option returns exhibit only weak relationships with the Greeks.
+For calls, higher deltas are generally associated with lower expected expiration returns, reflecting that deep-in-the-money calls behave more like stock and therefore show smaller payoff asymmetry. Most large-return points cluster near very low delta values, where cheap far-OTM options can generate outsized payoffs when large price moves occur. Implied volatility is strongly linked to dispersion: higher-IV regions show wider spreads of returns but no consistent improvement in average outcomes.
+For puts, the pattern is similar when viewed against vega: high-vega contracts (typically long-dated or ATM) show wide variability but do not systematically yield higher returns. Extreme positive returns again occur mainly in low-delta, low-vega zones where option prices are smallest. Overall, Greeks primarily shape risk and variability, but they do not reliably predict higher mean returns.
+
 ```js
 import { renderGreeksScatter } from "./charts/index.js";
 

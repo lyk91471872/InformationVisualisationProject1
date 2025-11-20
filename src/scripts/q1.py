@@ -2,8 +2,8 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
-INPUT  = Path("data/nvda_2020_2022_preprocessed.csv")
-OUTPUT = Path("data/q1.csv")
+INPUT  = Path("src/data/nvda_2020_2022_preprocessed.csv")
+OUTPUT = Path("src/data/q1.csv")
 
 def main():
     if not INPUT.exists():

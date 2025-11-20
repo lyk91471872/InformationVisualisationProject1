@@ -2,8 +2,8 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
-INPUT = Path("data/nvda_2020_2022.csv")
-OUTPUT = Path("data/nvda_2020_2022_preprocessed.csv")
+INPUT = Path("src/data/nvda_2020_2022.csv")
+OUTPUT = Path("src/data/nvda_2020_2022_preprocessed.csv")
 
 def extract_greek(df, prefix):
     up = prefix.upper()
@@ -39,47 +39,88 @@ def bin_dte(x):
 
 def main():
     df = pd.read_csv(INPUT, low_memory=False)
+
+    # clean column names
     df.columns = [c.strip().replace("\ufeff", "").replace("[", "").replace("]", "") for c in df.columns]
+
+    # date columns
     for c in df.columns:
         if "DATE" in c.upper():
             df[c] = pd.to_datetime(df[c], errors="coerce", utc=True)
 
-    if {"EXPIRE_DATE", "QUOTE_DATE"}.issubset(df.columns):
-        df["DTE_int"] = (df["EXPIRE_DATE"] - df["QUOTE_DATE"]).dt.days
-    if {"UNDERLYING_LAST", "STRIKE"}.issubset(df.columns):
-        df["moneyness"] = df["UNDERLYING_LAST"] / df["STRIKE"]
+    # numeric columns
+    num_cols = ["UNDERLYING_LAST","STRIKE","C_BID","C_ASK","P_BID","P_ASK"]
+    for c in num_cols:
+        if c in df.columns:
+            df[c] = pd.to_numeric(df[c], errors="coerce")
+
+    # create option_type if missing
     if "option_type" not in df.columns:
         df["option_type"] = np.where(df.index % 2 == 0, "CALL", "PUT")
 
-    if {"bid", "ask"}.issubset(df.columns):
-        df["mid"] = (pd.to_numeric(df["bid"], errors="coerce") + pd.to_numeric(df["ask"], errors="coerce")) / 2
-    else:
-        bid_cols = [c for c in df.columns if "BID" in c.upper()]
-        ask_cols = [c for c in df.columns if "ASK" in c.upper()]
-        if bid_cols and ask_cols:
-            df["mid"] = (pd.to_numeric(df[bid_cols[0]], errors="coerce") + pd.to_numeric(df[ask_cols[0]], errors="coerce")) / 2
-        else:
-            df["mid"] = np.nan
+    # DTE
+    df["DTE_int"] = (df["EXPIRE_DATE"] - df["QUOTE_DATE"]).dt.days
 
-    df["S_exp"] = df["UNDERLYING_LAST"]
+    # moneyness = K / S
+    df["moneyness"] = df["STRIKE"] / df["UNDERLYING_LAST"]
 
-    if {"payoff_exp", "S_exp"}.issubset(df.columns):
-        df["return_exp"] = (df["payoff_exp"] / df["S_exp"]) - 1
-    elif {"UNDERLYING_LAST", "STRIKE"}.issubset(df.columns):
-        df["return_exp"] = (df["UNDERLYING_LAST"] - df["STRIKE"]) / df["STRIKE"]
-
-    df["return_exp"] = df["return_exp"].clip(-1, 10)
+    # log-moneyness = ln(K/S)
     df["log_m"] = np.log(df["moneyness"])
+
+
+    # premiums
+    df["call_premium"] = (df["C_BID"] + df["C_ASK"]) / 2
+    df["put_premium"]  = (df["P_BID"] + df["P_ASK"]) / 2
+
+    # --------------------------------------------------
+    # STEP 1: Build underlying price table (daily)
+    # --------------------------------------------------
+    underlying_daily = (
+        df[["QUOTE_DATE", "UNDERLYING_LAST"]]
+        .dropna()
+        .drop_duplicates(subset=["QUOTE_DATE"])
+        .rename(columns={"UNDERLYING_LAST": "S_exp"})
+    )
+
+    # --------------------------------------------------
+    # STEP 2: Merge expiration-day underlying price
+    # --------------------------------------------------
+    df = df.merge(
+        underlying_daily,
+        left_on="EXPIRE_DATE",
+        right_on="QUOTE_DATE",
+        how="left",
+        suffixes=("", "_drop")
+    )
+    df = df.drop(columns=[c for c in df.columns if c.endswith("_drop")])
+
+    # true expiration underlying price
+    # S_exp is already created above
+
+    # payoffs
+    df["call_payoff"] = np.maximum(df["S_exp"] - df["STRIKE"], 0)
+    df["put_payoff"]  = np.maximum(df["STRIKE"] - df["S_exp"], 0)
+
+    # true returns
+    df["return_exp_call"] = (df["call_payoff"] - df["call_premium"]) / df["call_premium"]
+    df["return_exp_put"]  = (df["put_payoff"]  - df["put_premium"])  / df["put_premium"]
+
+    # clip extreme returns
+    df["return_exp_call"] = df["return_exp_call"].clip(-1, 10)
+    df["return_exp_put"]  = df["return_exp_put"].clip(-1, 10)
+
+    # bins
     df["DTE_bin"] = df["DTE_int"].apply(bin_dte)
     df["log_m_bin"] = df["log_m"].apply(bin_logm)
 
+    # greeks
     for g in ["delta", "gamma", "theta", "vega", "iv"]:
         df[g] = pd.to_numeric(extract_greek(df, g), errors="coerce")
 
-    df = df.dropna(subset=["QUOTE_DATE", "EXPIRE_DATE", "STRIKE"], how="any")
+    df = df.dropna(subset=["QUOTE_DATE", "EXPIRE_DATE", "STRIKE"])
 
     df.to_csv(OUTPUT, index=False)
-    print(f"✅ Saved {OUTPUT} with {len(df):,} rows and {len(df.columns)} columns")
+    print("✅ Saved", OUTPUT)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

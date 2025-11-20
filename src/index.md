@@ -1,13 +1,19 @@
-# NVDA Options Data Explorer (Vega-Lite API v5)
+# NVDA Options Data Explorer (D3)
 
 ```js
 
 import * as d3 from "npm:d3";
 import * as Inputs from "npm:@observablehq/inputs";
 
+/*
 const options = await FileAttachment("./data/nvda_2020_2022.csv").csv({typed: true});
 
 display(Inputs.table(options.slice(0, 10)));
+
+const options_p = await FileAttachment("./data/nvda_2020_2022_preprocessed.csv").csv({typed: true});
+
+display(Inputs.table(options_p.slice(0, 10)));
+*/
 
 /*
 const numericCols = Object.keys(options[0]).filter(
