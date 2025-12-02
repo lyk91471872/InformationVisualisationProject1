@@ -13,18 +13,18 @@ We visualize CALL options in a 3D scatter (θ, Δ, Γ) and encode payoff as colo
 - **Vibration frequency:** proportional to vega (higher vega → faster vibration)
 
 ```js
-import { renderGreeks3DCalls } from "./charts/index.js";
+import { renderGreeks3DOptions } from "./charts/index.js";
 
 const q4 = await FileAttachment("./data/q4.csv").csv({ typed: true });
 
 // Calls only for now; we can add puts later with a separate view.
-const calls = q4.filter(d => d.option_type === "CALL");
+// const calls = q4.filter(d => d.option_type === "CALL");
 
 // 3D scatter: x = theta, y = delta, z = gamma, vega = vibration frequency
 display(
-  renderGreeks3DCalls(calls, {
-    width: 640,
-    height: 640,
+  renderGreeks3DOptions(q4, {
+    width: 800,
+    height: 600,
     title: "CALL · 3D Greeks vs Expiration Return (θ, Δ, Γ, ν)",
     xLabel: "θ (Theta)",
     yLabel: "Δ (Delta)",

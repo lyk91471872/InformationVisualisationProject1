@@ -22,27 +22,30 @@ import * as d3 from "d3";
  * - scale 只用非 outlier 的值，domain 对称 [-maxAbs, +maxAbs]
  * - 三轴交点 = (0,0,0)，outliers 被 clamp 在轴端
  */
-export function renderGreeks3DCalls(
+export function renderGreeks3DOptions(
   data,
   {
-    width = 640,
-    height = 640,
+    width = 800,
+    height = 600,
     title = "CALL · 3D Greeks vs Expiration Return (θ, Δ, Γ, ν)",
     xLabel = "θ (Theta)",
     yLabel = "Δ (Delta)",
     zLabel = "Γ (Gamma)"
   } = {}
 ) {
-  const margin = { top: 40, right: 260, bottom: 40, left: 60 };
+  const margin = { top: 40, right: 160, bottom: 40, left: 60 };
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
 
   // --- Camera state ---
   const camera = {
-    yaw: -0.6,
-    pitch: 0.6,
-    distance: 0.5,
-    fov: 1.2
+    yaw: 1.745,
+    pitch: -2.967,
+    distance: 1,
+    fov: 1.2,
+    panX: -80,
+    panY: 100,
+    panZ: 0
   };
 
   // === 1. 用 IQR 找 outliers（theta & gamma） ===
@@ -55,8 +58,8 @@ export function renderGreeks3DCalls(
       // 如果没有离散度，就不做 fence
       return { lower: d3.min(v) ?? 0, upper: d3.max(v) ?? 0, q1, q3, iqr };
     }
-    const lower = (q1 ?? 0) - 1.5 * iqr;
-    const upper = (q3 ?? 0) + 1.5 * iqr;
+    const lower = (q1 ?? 0) - 20 * iqr;
+    const upper = (q3 ?? 0) + 20 * iqr;
     return { lower, upper, q1, q3, iqr };
   }
 
@@ -145,12 +148,14 @@ export function renderGreeks3DCalls(
     return [x, ny, nz];
   }
 
-  function project([x, y, z], { distance, fov }) {
-    const zc = z + distance;
+  function project([x, y, z], { distance, fov, panX, panY, panZ }) {
+    // Add panZ to the depth calculation
+    const zc = z + distance + (panZ || 0);
     const scale = fov / zc;
     return {
-      sx: x * scale * innerWidth * 0.4 + innerWidth / 2,
-      sy: y * scale * innerHeight * 0.4 + innerHeight / 2,
+      // Add panX and panY to the 2D screen coordinates
+      sx: (x * scale * innerWidth * 0.4) + (innerWidth / 2) + (panX || 0),
+      sy: (y * scale * innerHeight * 0.4) + (innerHeight / 2) + (panY || 0),
       depth: zc
     };
   }
@@ -184,7 +189,7 @@ export function renderGreeks3DCalls(
     { name: "z", from: [0, 0, -1], to: [0, 0, 1], label: zLabel, color: "#4488ff" }
   ];
 
-  // === 5. DOM 结构 ===
+  // === 5. DOM Structure ===
   const container = document.createElement("div");
   container.style.display = "flex";
   container.style.flexDirection = "column";
@@ -192,13 +197,17 @@ export function renderGreeks3DCalls(
   container.style.color = "white";
   container.style.fontFamily = "system-ui, sans-serif";
   container.style.position = "relative";
+  // Ensure container fits within window/parent
+  container.style.maxWidth = "100%";
 
   const controls = d3
     .select(container)
     .append("div")
-    .style("display", "flex")
-    .style("flexWrap", "wrap")
-    .style("gap", "0.75rem")
+    .style("display", "grid")
+    .style("grid-template-columns", "repeat(3, 1fr)") // Force 3 equal columns
+    .style("gap", "0.5rem")
+    .style("width", "100%")  // Take full width of parent
+    .style("box-sizing", "border-box") // Handle padding/border correctly
     .style("alignItems", "center");
 
   const svg = d3
@@ -212,13 +221,6 @@ export function renderGreeks3DCalls(
   const g = svg
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
-
-  g.append("rect")
-    .attr("width", innerWidth)
-    .attr("height", innerHeight)
-    .attr("fill", "transparent")
-    .attr("stroke", "white")
-    .attr("stroke-width", 1);
 
   svg
     .append("text")
@@ -425,8 +427,9 @@ export function renderGreeks3DCalls(
 
         axisGroup
           .append("text")
-          .attr("x", P.sx + 4)
+          .attr("x", P.sx - 4)
           .attr("y", P.sy - 2)
+          .attr("text-anchor", "end")
           .attr("fill", "#cccccc")
           .attr("font-size", 9)
           .text(fmtGreek(val));
@@ -587,8 +590,20 @@ export function renderGreeks3DCalls(
     }
   );
 
-  makeSlider("Zoom", 0.05, 1.0, 0.1, camera.distance, v => {
+  makeSlider("Zoom", 0.05, 2.0, 0.1, camera.distance, v => {
     camera.distance = v;
+  });
+
+  makeSlider("Pan X", -width, width, 10, camera.panX, v => {
+    camera.panX = v;
+  });
+
+  makeSlider("Pan Y", -height, height, 10, camera.panY, v => {
+    camera.panY = v;
+  });
+
+  makeSlider("Pan Z", -2.0, 2.0, 0.05, camera.panZ, v => {
+    camera.panZ = v;
   });
 
   // === 10. 把 outliers print 出来（DOM + console） ===
