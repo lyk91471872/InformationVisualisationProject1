@@ -27,7 +27,7 @@ export function renderGreeks3DOptions(
   {
     width = 800,
     height = 600,
-    title = "CALL · 3D Greeks vs Expiration Return (θ, Δ, Γ, ν)",
+    title = "3D Greeks vs Expiration Return (θ, Δ, Γ, ν)",
     xLabel = "θ (Theta)",
     yLabel = "Δ (Delta)",
     zLabel = "Γ (Gamma)"
@@ -492,7 +492,7 @@ export function renderGreeks3DOptions(
                 .style("opacity", 1)
                 .html(
                   [
-                    `<b>CALL</b>`,
+                    `<b>${datum.option_type}</b>`,
                     `Return@exp: ${fmtReturn(datum.return_exp)}`,
                     `θ (theta): ${fmtGreek(datum.theta)}`,
                     `Δ (delta): ${fmtGreek(datum.delta)}`,

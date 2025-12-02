@@ -24,7 +24,7 @@ const q4 = await FileAttachment("./data/q4.csv").csv({ typed: true });
 display(
   renderGreeks3DOptions(q4, {
     width: 800,
-    height: 600,
+    height: 800,
     title: "CALL · 3D Greeks vs Expiration Return (θ, Δ, Γ, ν)",
     xLabel: "θ (Theta)",
     yLabel: "Δ (Delta)",
