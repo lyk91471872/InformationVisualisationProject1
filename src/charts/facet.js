@@ -37,7 +37,13 @@ export function renderFacetedBubbles(data, {
   const r    = d3.scaleSqrt().domain([0, nMax]).range(sizeRange);
 
   const absMax = d3.max(data, d => Math.abs(d[valueField])) || 1e-6;
-  const color  = d3.scaleDiverging(colorScheme).domain([-absMax, 0, absMax]);
+  // const color  = d3.scaleDiverging(colorScheme).domain([-absMax, 0, absMax]);
+  const color = d3.scaleDiverging()
+    .domain([-absMax, 0, absMax])
+    .interpolator(t => {
+      if (t < 0.5) return d3.interpolateRgb("#F3A0F4", "#EEE")(t * 2);
+      else return d3.interpolateRgb("#EEE", "#6DFFC4")((t - 0.5) * 2);
+    });
 
   facetOrder.forEach((key, i) => {
     const gx = i*(panel.width + panel.gap);

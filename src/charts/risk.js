@@ -27,7 +27,13 @@ export function renderRiskReturnScatter(data, {
 
   const cMin = d3.min(data, d => +d[colorField]) ?? 0;
   const cMax = d3.max(data, d => +d[colorField]) ?? 1;
-  const color = d3.scaleSequential(colorScheme).domain([cMin, cMax]);
+  // const color = d3.scaleSequential(colorScheme).domain([cMin, cMax]);
+  const color = d3.scaleDiverging()
+    .domain([cMin, 0, cMax])
+    .interpolator(t => {
+      if (t < 0.5) return d3.interpolateRgb("#F3A0F4", "#EEE")(t * 2);
+      else return d3.interpolateRgb("#EEE", "#6DFFC4")((t - 0.5) * 2);
+    });
 
   svg.append("text")
     .attr("x", m.left).attr("y", 28)

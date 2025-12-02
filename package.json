@@ -9,7 +9,11 @@
     "observable": "observable"
   },
   "dependencies": {
-    "@observablehq/framework": "^1.13.3"
+    "@observablehq/framework": "^1.13.3",
+    "@observablehq/stdlib": "^5.8.8",
+    "katex": "^0.16.25",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0"
   },
   "devDependencies": {
     "d3": "^7.9.0",

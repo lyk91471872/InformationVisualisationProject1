@@ -12,16 +12,6 @@ export { applySvgTheme } from "./theme.js";
 
 import * as d3 from "d3";
 
-/**
- * 3D Greeks scatter for CALLs
- * x = theta, y = delta, z = gamma
- * color & size ~ return_exp
- * vibration frequency ~ vega
- *
- * - 用 IQR fence 找出 theta/gamma 的 outliers
- * - scale 只用非 outlier 的值，domain 对称 [-maxAbs, +maxAbs]
- * - 三轴交点 = (0,0,0)，outliers 被 clamp 在轴端
- */
 export function renderGreeks3DOptions(
   data,
   {
@@ -39,14 +29,22 @@ export function renderGreeks3DOptions(
 
   // --- Camera state ---
   const camera = {
-    yaw: 1.745,
-    pitch: -2.967,
-    distance: 1,
+    yaw: -1.57,
+    pitch: -2.88,
+    distance: 1.25,
     fov: 1.2,
-    panX: -80,
-    panY: 100,
+    panX: 20,
+    panY: 50,
     panZ: 0
   };
+
+  data = data.filter(d =>
+    Number.isFinite(d.theta) &&
+    Number.isFinite(d.delta) &&
+    Number.isFinite(d.gamma) &&
+    d.iv > 0.001 && // <--- Filter out IV=0 (dead options)
+    !(d.theta === 0 && d.gamma === 0) // <--- Filter out points stuck on the axis
+  );
 
   // === 1. 用 IQR 找 outliers（theta & gamma） ===
   function iqrBounds(values) {
@@ -76,13 +74,15 @@ export function renderGreeks3DOptions(
       d.theta < thetaFence.lower || d.theta > thetaFence.upper;
     const isGammaOut =
       d.gamma < gammaFence.lower || d.gamma > gammaFence.upper;
-    const out = isThetaOut || isGammaOut;
+    const isVegaOut = d.vega < 0;
+    const out = isThetaOut || isGammaOut || isVegaOut;
     if (out) outliers.push(d);
     return !out;
   });
 
   // 如果极端情况 clean 为空，就退回全数据
   const baseForScale = clean.length > 0 ? clean : data;
+  data = clean.length > 0 ? clean : data;
 
   // === 2. 对称 domain：只用非 outlier 值，保证 0 在中点 ===
   function symmetricDomain(values) {
@@ -117,15 +117,21 @@ export function renderGreeks3DOptions(
   const absReturns = data.map(d => Math.abs(d.return_exp));
   const maxAbsReturn = d3.max(absReturns) || 1;
   const rScale = d3.scaleSqrt().domain([0, maxAbsReturn]).range([1, 8]);
-  const color = d => (d.return_exp >= 0 ? "#00ff66" : "#ff00ff");
+  const color = d => (d.return_exp >= 0 ? "#6DFFC4" : "#F3A0F4");
 
   // vega → vibration frequency
-  const vegaExtent = d3.extent(data, d => d.vega);
-  const vegaDomain = [vegaExtent[0] ?? 0, vegaExtent[1] ?? 0];
+  const vegaMax = d3.max(data, d => d.vega);
+  const vegaDomain = [0, vegaMax];
   const vegaScale = d3
     .scaleLinear()
     .domain(vegaDomain)
-    .range([0.5, 100.0]);
+    .range([0.5, 100]);
+
+  // iv → vibration amplitude
+  const ivExtent = d3.extent(data, d => d.iv);
+  const ivAmpScale = d3.scaleLinear()
+    .domain([0, ivExtent[1] || 1])
+    .range([0.1, 10]);
 
   const fmtGreek = d3.format(".3f");
   const fmtReturn = d3.format("+.3f");
@@ -166,6 +172,7 @@ export function renderGreeks3DOptions(
       d.theta < thetaFence.lower || d.theta > thetaFence.upper;
     const isGammaOut =
       d.gamma < gammaFence.lower || d.gamma > gammaFence.upper;
+    const isVegaOut = d.vega < 0;
     const model = [
       xScale(d.theta),
       yScale(d.delta),
@@ -176,6 +183,7 @@ export function renderGreeks3DOptions(
       model,
       isThetaOut,
       isGammaOut,
+      isVegaOut,
       freq: vegaScale(d.vega),
       baseRadius: rScale(Math.abs(d.return_exp)),
       proj: null,
@@ -250,6 +258,7 @@ export function renderGreeks3DOptions(
 
   let baseY = [];
   let circles;
+  let hoveredDatum = null;
 
   // === 6. Legend（保持不变） ===
   const legend = g
@@ -274,7 +283,7 @@ export function renderGreeks3DOptions(
     .attr("cx", 8)
     .attr("cy", 6)
     .attr("r", 5)
-    .attr("fill", "#00ff66");
+    .attr("fill", "#6DFFC4");
   colorLegend
     .append("text")
     .attr("x", 18)
@@ -289,7 +298,7 @@ export function renderGreeks3DOptions(
     .attr("cx", 8)
     .attr("cy", 6)
     .attr("r", 5)
-    .attr("fill", "#ff00ff");
+    .attr("fill", "#F3A0F4");
   colorLegend2
     .append("text")
     .attr("x", 18)
@@ -329,8 +338,7 @@ export function renderGreeks3DOptions(
       .attr("cx", 10)
       .attr("cy", sy)
       .attr("r", s.r)
-      .attr("fill", "#00ff66")
-      .attr("fill-opacity", 0.5)
+      .attr("fill", "#6DFFC4")
       .attr("stroke", "#888")
       .attr("stroke-width", 0.5);
 
@@ -465,10 +473,15 @@ export function renderGreeks3DOptions(
     });
 
     points.sort((a, b) => b.depth - a.depth);
+    const visiblePoints = points.filter(d => d.depth > 0.1);
 
+    // Define this OUTSIDE the render function (along with baseY, etc.)
+    // let hoveredDatum = null; 
+
+    // Inside render():
     circles = pointGroup
       .selectAll("circle")
-      .data(points)
+      .data(visiblePoints) 
       .join(
         enter =>
           enter
@@ -476,17 +489,10 @@ export function renderGreeks3DOptions(
             .attr("cx", d => d.proj.sx)
             .attr("cy", d => d.proj.sy)
             .attr("r", d => d.baseRadius)
-            .attr("fill", d => color(d.datum))
-            .attr("fill-opacity", d =>
-              d.isThetaOut || d.isGammaOut ? 1.0 : 0.7
-            ) // outlier 亮一点
-            .attr("stroke", d =>
-              d.isThetaOut || d.isGammaOut ? "#ffcc00" : "#111"
-            )
-            .attr("stroke-width", d =>
-              d.isThetaOut || d.isGammaOut ? 1.2 : 0.5
-            )
             .on("pointerenter", (event, d) => {
+              hoveredDatum = d.datum; // <--- 1. Lock the specific data object
+              render();               // <--- 2. Force immediate re-render
+
               const { datum } = d;
               tooltip
                 .style("opacity", 1)
@@ -499,7 +505,9 @@ export function renderGreeks3DOptions(
                     `Γ (gamma): ${fmtGreek(datum.gamma)}`,
                     `ν (vega): ${fmtGreek(datum.vega)}`,
                     `IV: ${fmtIV(datum.iv)}`,
-                    d.isThetaOut || d.isGammaOut ? `<span style="color:#ffcc00">OUTLIER (θ/Γ)</span>` : ""
+                    d.isThetaOut || d.isGammaOut || d.isVegaOut
+                      ? `<span style="color:#ffcc00">OUTLIER</span>`
+                      : ""
                   ].join("<br>")
                 );
             })
@@ -510,33 +518,64 @@ export function renderGreeks3DOptions(
                 .style("top", `${offsetY + 20}px`);
             })
             .on("pointerleave", () => {
+              hoveredDatum = null; // <--- 3. Unlock
               tooltip.style("opacity", 0);
+              render();            // <--- 4. Restore colors
             }),
         update => update,
         exit => exit.remove()
       )
+
+      // === MAIN ANIMATION LOOP ===
       .attr("cx", d => d.proj.sx)
       .attr("cy", d => d.proj.sy)
       .attr("r", d => d.baseRadius)
-      .attr("fill", d => color(d.datum));
+      // Check for match using the data object itself
+      .attr("fill", d => 
+        d.datum === hoveredDatum ? "#ffffff" : color(d.datum)
+      )
+      .attr("fill-opacity", d => {
+        if (d.datum === hoveredDatum) return 1.0;
+        return d.isThetaOut || d.isGammaOut || d.isVegaOut ? 1.0 : 0.7;
+      })
+      .attr("stroke", d => {
+        if (d.datum === hoveredDatum) return "#ffffff";
+        return d.isThetaOut || d.isGammaOut || d.isVegaOut ? "#ffcc00" : "#111";
+      })
+      .attr("stroke-width", d => {
+        if (d.datum === hoveredDatum) return 3.0;
+        return d.isThetaOut || d.isGammaOut || d.isVegaOut ? 1.2 : 0.5;
+      });
 
-    baseY = points.map(d => d.proj.sy);
+    baseY = visiblePoints.map(d => d.proj.sy);
   }
 
   render();
 
-  // === 8. vega 抖动 ===
-  const amp = 0.5;
+  // === 8. Organic Vega Tremble (Scaled by IV) ===
   d3.timer(elapsed => {
     const t = elapsed / 1000;
-    if (!circles) return;
-    circles.attr("cy", (d, i) => {
-      const offset = amp * Math.sin(t * d.freq);
-      return (baseY[i] ?? d.proj.sy) + offset;
-    });
+    if (!circles || !isTrembling) return;
+
+    circles
+      .attr("cx", (d, i) => {
+        // Calculate amplitude based on this point's IV
+        const iv = d.datum.iv;
+        const ivSafe = Number.isFinite(iv) ? iv : 0;
+        const amp = ivAmpScale(iv);
+        const offsetX = Math.cos(t * d.freq * 0.7 + i);
+        return d.proj.sx + amp * offsetX;
+      })
+      .attr("cy", (d, i) => {
+        const iv = d.datum.iv;
+        const ivSafe = Number.isFinite(iv) ? iv : 0;
+        const amp = ivAmpScale(iv);
+        const offsetY = Math.sin(t * d.freq + i);
+        return d.proj.sy + amp * offsetY;
+      });
   });
 
-  // === 9. 视角控制 ===
+  // === 9. View Control ===
   function makeSlider(labelText, min, max, step, initial, onChange) {
     const wrap = controls
       .append("label")
@@ -566,9 +605,13 @@ export function renderGreeks3DOptions(
       onChange(v);
       render();
     });
+
+    // CRITICAL: Return the input/span so the spin timer can update them
+    return { input, valueSpan };
   }
 
-  makeSlider(
+  // 1. Yaw (We capture this one into 'yawUI' to control it later)
+  const yawUI = makeSlider(
     "Yaw (°)",
     -180,
     180,
@@ -579,6 +622,7 @@ export function renderGreeks3DOptions(
     }
   );
 
+  // 2. Pitch
   makeSlider(
     "Pitch (°)",
     -180,
@@ -590,10 +634,12 @@ export function renderGreeks3DOptions(
     }
   );
 
+  // 3. Zoom
   makeSlider("Zoom", 0.05, 2.0, 0.1, camera.distance, v => {
     camera.distance = v;
   });
 
+  // 4. Pans
   makeSlider("Pan X", -width, width, 10, camera.panX, v => {
     camera.panX = v;
   });
@@ -606,15 +652,79 @@ export function renderGreeks3DOptions(
     camera.panZ = v;
   });
 
-  // === 10. 把 outliers print 出来（DOM + console） ===
+  // === 10. Auto-Spin Button (Default: ON) ===
+  const btn = controls
+    .append("button")
+    .text("Auto Spin: ON")          // <--- Default text ON
+    .style("padding", "4px 8px")
+    .style("font-size", "11px")
+    .style("cursor", "pointer")
+    .style("background", "#0066cc") // <--- Default blue (active)
+    .style("color", "white")
+    .style("border", "1px solid #666")
+    .style("width", "200px")
+    .style("text-align", "center");
+
+  // Define the spin function so we can use it for both init and click
+  const spinTick = () => {
+    camera.yaw += 0.005;
+    if (camera.yaw > Math.PI) camera.yaw -= 2 * Math.PI;
+
+    const deg = Math.round((camera.yaw * 180) / Math.PI);
+    yawUI.input.property("value", deg);
+    yawUI.valueSpan.text(deg);
+
+    render();
+  };
+
+  // Start timer immediately
+  let spinTimer = d3.timer(spinTick);
+
+  btn.on("click", () => {
+    if (spinTimer) {
+      spinTimer.stop();
+      spinTimer = null;
+      btn.text("Auto Spin: OFF").style("background", "#333");
+    } else {
+      btn.text("Auto Spin: ON").style("background", "#0066cc");
+      spinTimer = d3.timer(spinTick);
+    }
+  });
+
+  // === 10b. Tremble Toggle Button (Default: ON) ===
+  let isTrembling = true; // <--- Default true
+
+  const trembleBtn = controls
+    .append("button")
+    .text("Tremble: ON")            // <--- Default text ON
+    .style("padding", "4px 8px")
+    .style("font-size", "11px")
+    .style("cursor", "pointer")
+    .style("background", "#9900cc") // <--- Default purple (active)
+    .style("color", "white")
+    .style("border", "1px solid #666")
+    .style("width", "200px")
+    .style("text-align", "center");
+
+  trembleBtn.on("click", () => {
+    isTrembling = !isTrembling;
+    if (isTrembling) {
+      trembleBtn.text("Tremble: ON").style("background", "#9900cc");
+    } else {
+      trembleBtn.text("Tremble: OFF").style("background", "#333");
+      render(); // Snap back to clean grid immediately
+    }
+  });
+
+  // === 11. 把 outliers print 出来（DOM + console） ===
   if (outliers.length > 0) {
     console.log(
-      "Theta/Gamma outliers excluded from scale:",
+      "Theta/Gamma/Vega outliers excluded from scale:",
       outliers.map(d => ({
+        return_exp: d.return_exp,
+        delta: d.delta,
         theta: d.theta,
         gamma: d.gamma,
-        delta: d.delta,
-        return_exp: d.return_exp,
         vega: d.vega,
         iv: d.iv
       }))

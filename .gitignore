@@ -2,7 +2,8 @@
 /dist/
 node_modules/
 yarn-error.log
-src/data/
+src/data/nvda_2020_2022_preprocessed.csv
+src/data/nvda_2020_2022.csv
 src/.observablehq/cache/
 src/scripts/__pycache__
 __pycache__/
