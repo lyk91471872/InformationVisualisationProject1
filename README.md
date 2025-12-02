@@ -3,7 +3,6 @@
 This repo explores NVIDIA (NVDA) option chains (2020–2022) and answers five domain questions with **Python preprocessing** + **D3 (Observable)** visuals (We even have a Dark Mode Visual!).
 
 ---
-
 ## Repository layout
 
 ```
@@ -40,11 +39,26 @@ src/
   styles.css
 ```
 
+# 🚀 How to Reproduce
+
+```bash
+npm install
+npm run dev
+```
+
 ---
 
 # 📊 Results Overview (Q1–Q5)
 
 Below are the visual outputs from each analysis.
+
+---
+
+## Index Page **
+
+**Screenshot:**  
+![Index Screenshot](./screenshots/index.png)
+
 
 ---
 
@@ -77,9 +91,7 @@ Below are the visual outputs from each analysis.
 - Magnitude varies with NVDA's macro environment—especially during 2021–2022 volatility.
 
 **Screenshot:**  
-![Q3 Screenshot 1](./screenshots/q3_1.png)
-![Q3 Screenshot 2](./screenshots/q3_2.png)
-![Q3 Screenshot 3](./screenshots/q3_3.png)
+![Q3 Screenshot](./screenshots/q3.png)
 
 ---
 
@@ -105,8 +117,3 @@ Below are the visual outputs from each analysis.
 
 ---
 
-# 🚀 How to Reproduce
-
-```bash
-# 1. Preprocess master dataset and Generate Q1–Q5 CSVs
-python src/scripts/run_all.py
