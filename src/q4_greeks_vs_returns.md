@@ -4,36 +4,33 @@ Across both calls and puts, option returns exhibit only weak relationships with 
 For calls, higher deltas are generally associated with lower expected expiration returns, reflecting that deep-in-the-money calls behave more like stock and therefore show smaller payoff asymmetry. Most large-return points cluster near very low delta values, where cheap far-OTM options can generate outsized payoffs when large price moves occur. Implied volatility is strongly linked to dispersion: higher-IV regions show wider spreads of returns but no consistent improvement in average outcomes.
 For puts, the pattern is similar when viewed against vega: high-vega contracts (typically long-dated or ATM) show wide variability but do not systematically yield higher returns. Extreme positive returns again occur mainly in low-delta, low-vega zones where option prices are smallest. Overall, Greeks primarily shape risk and variability, but they do not reliably predict higher mean returns.
 
+
+# Q4 · How are Greeks related to returns?
+
+We visualize CALL options in a 3D scatter (θ, Δ, Γ) and encode payoff as color and size:
+- **Color:** magenta for loss at expiration, green for gain
+- **Size:** proportional to |return_exp|
+- **Vibration frequency:** proportional to vega (higher vega → faster vibration)
+
 ```js
-import { renderGreeksScatter } from "./charts/index.js";
+import { renderGreeks3DCalls } from "./charts/index.js";
 
-const q4 = await FileAttachment("./data/q4.csv").csv({typed: true});
+const q4 = await FileAttachment("./data/q4.csv").csv({ typed: true });
 
-// Split by option type
+// Calls only for now; we can add puts later with a separate view.
 const calls = q4.filter(d => d.option_type === "CALL");
-const puts  = q4.filter(d => d.option_type === "PUT");
 
-// CALL: x = delta, size ~ |gamma|, color ~ iv
-display(renderGreeksScatter(calls, {
-  title: "CALL · Return vs Δ (size ~ |Γ|, color ~ IV)",
-  xField: "delta",
-  sizeField: "gamma",
-  colorField: "iv",
-  xLabel: "Δ",
-  sizeLabel: "|Γ|",
-  colorLabel: "Implied Volatility"
-}));
-
-// PUT:  x = vega, size ~ |theta|, color ~ iv
-display(renderGreeksScatter(puts, {
-  title: "PUT · Return vs ν (size ~ |θ|, color ~ IV)",
-  xField: "vega",
-  sizeField: "theta",
-  colorField: "iv",
-  xLabel: "ν (vega)",
-  sizeLabel: "|θ|",
-  colorLabel: "Implied Volatility"
-}));
+// 3D scatter: x = theta, y = delta, z = gamma, vega = vibration frequency
+display(
+  renderGreeks3DCalls(calls, {
+    width: 640,
+    height: 640,
+    title: "CALL · 3D Greeks vs Expiration Return (θ, Δ, Γ, ν)",
+    xLabel: "θ (Theta)",
+    yLabel: "Δ (Delta)",
+    zLabel: "Γ (Gamma)"
+  })
+);
 
 
 ```
