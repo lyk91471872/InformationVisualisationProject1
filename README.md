@@ -3,6 +3,13 @@
 This repo explores NVIDIA (NVDA) option chains (2020–2022) and answers five domain questions with **Python preprocessing** + **D3 (Observable)** visuals (We even have a Dark Mode Visual!).
 
 ---
+
+## Dataset
+https://www.kaggle.com/datasets/kylegraupe/nvda-daily-option-chains-q1-2020-to-q4-2022
+
+This dataset is a combination of three years of NVIDIA ($NVDA) option chain end of day quotes ranging from 01-2020 to 12-2022. Each row represents the information associated with one contract's strike price and a given expiration date.
+
+---
 ## Repository layout
 
 ```
@@ -54,7 +61,7 @@ Below are the visual outputs from each analysis.
 
 ---
 
-## Index Page **
+## **Index Page**
 
 **Screenshot:**  
 ![Index Screenshot](./screenshots/index.png)
