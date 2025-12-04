@@ -11,7 +11,6 @@ export function renderFacetedBubbles(data, {
   panel = {width: 360, height: 270, gap: 40},
   margin = {top: 56, right: 260, bottom: 48, left: 120},
   sizeRange = [4,16],
-  colorScheme = d3.interpolatePRGn,
   valueField = "mean_return",
   legendTitles = {color: "mean return", size: "n"},
   hideYAxisIn = i => i > 0       // function: which panels hide y axis ticks
@@ -37,7 +36,6 @@ export function renderFacetedBubbles(data, {
   const r    = d3.scaleSqrt().domain([0, nMax]).range(sizeRange);
 
   const absMax = d3.max(data, d => Math.abs(d[valueField])) || 1e-6;
-  // const color  = d3.scaleDiverging(colorScheme).domain([-absMax, 0, absMax]);
   const color = d3.scaleDiverging()
     .domain([-absMax, 0, absMax])
     .interpolator(t => {
@@ -50,7 +48,7 @@ export function renderFacetedBubbles(data, {
     const g = root.append("g").attr("transform", `translate(${gx},0)`);
 
     g.append("text")
-      .attr("x", panel.width/2).attr("y", -18)
+      .attr("x", panel.width/2).attr("y", 0)
       .attr("text-anchor","middle").attr("font-size", 14).attr("font-weight", 600)
       .text(key);
 

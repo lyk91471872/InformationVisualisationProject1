@@ -39,9 +39,12 @@ export function strikeMap({
   const minK = sMin * Math.exp(mMin);
   const maxK = sMax * Math.exp(mMax);
 
-  const color = d3
-    .scaleSequential(d3.interpolateInferno)
-    .domain([minK, maxK]);
+  const color = d3.scaleDiverging()
+    .domain([minK, 200, maxK])
+    .interpolator(t => {
+      if (t < 0.5) return d3.interpolateRgb("#F3A0F4", "#EEE")(t * 2);
+      else return d3.interpolateRgb("#EEE", "#6DFFC4")((t - 0.5) * 2);
+    });
 
   // axes
   root

@@ -9,7 +9,6 @@ export function renderBubbleChart(data, {
   width = 800, height = 480,
   margin = {top: 40, right: 260, bottom: 56, left: 140},
   sizeRange = [6,24],
-  colorScheme = d3.interpolatePRGn,
   valueField = "mean",       // expects fields: n, mean
   legendTitles = {color: "mean return", size: "n"}
 } = {}) {
@@ -22,7 +21,6 @@ export function renderBubbleChart(data, {
   const r    = d3.scaleSqrt().domain([0, nMax]).range(sizeRange);
 
   const absMax = d3.max(data, d => Math.abs(d[valueField])) || 1e-6;
-  // const color  = d3.scaleDiverging(colorScheme).domain([-absMax, 0, absMax]);
   const color = d3.scaleDiverging()
     .domain([-absMax, 0, absMax])
     .interpolator(t => {

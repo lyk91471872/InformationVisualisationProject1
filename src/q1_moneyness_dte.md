@@ -6,17 +6,36 @@ Long term puts returns are quite high because the market sentiment is generally 
 
 ```js
 import * as d3 from "npm:d3";
-import { DTE_ORDER, LOG_ORDER, groupStats, renderBubbleChart } from "./charts/index.js";
+import { DTE_ORDER, LOG_ORDER, renderBubbleChart } from "./charts/index.js";
 
 const q1 = await FileAttachment("./data/q1.csv").csv({typed:true});
-const calls = q1.filter(d => d.option_type === "CALL" && d.DTE_bin && d.log_m_bin && Number.isFinite(+d.return_exp));
-const puts  = q1.filter(d => d.option_type === "PUT"  && d.DTE_bin && d.log_m_bin && Number.isFinite(+d.return_exp));
 
-const callAgg = groupStats(calls, { dteOrder: DTE_ORDER, logOrder: LOG_ORDER, valueField: "return_exp" });
-const putAgg  = groupStats(puts,  { dteOrder: DTE_ORDER, logOrder: LOG_ORDER, valueField: "return_exp" });
+const calls = q1.filter(
+  d => d.option_type === "CALL"
+      && d.DTE_bin && d.log_m_bin
+      && Number.isFinite(+d.mean)
+);
 
-display(renderBubbleChart(callAgg, { title: "CALL · log moneyness", dteOrder: DTE_ORDER, logOrder: LOG_ORDER }));
-display(renderBubbleChart(putAgg,  { title: "PUT · log moneyness", dteOrder: DTE_ORDER, logOrder: LOG_ORDER }));
+const puts = q1.filter(
+  d => d.option_type === "PUT"
+      && d.DTE_bin && d.log_m_bin
+      && Number.isFinite(+d.mean)
+);
+
+display(renderBubbleChart(calls, {
+  title: "CALL · log moneyness",
+  dteOrder: DTE_ORDER,
+  logOrder: LOG_ORDER,
+  valueField: "mean"
+}));
+
+display(renderBubbleChart(puts, {
+  title: "PUT · log moneyness",
+  dteOrder: DTE_ORDER,
+  logOrder: LOG_ORDER,
+  valueField: "mean"
+}));
+
 
 
 ```

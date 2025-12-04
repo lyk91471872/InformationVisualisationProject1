@@ -9,7 +9,7 @@ const q5 = await FileAttachment("./data/q5.csv").csv({typed:true});
 const nearOrder = Array.from(new Set(q5.map(d=>String(d.near_earn||"").trim()))).sort();
 
 display(renderFacetedBubbles(q5.filter(d=>d.option_type==="CALL"), {
-  title: "CALL · Mean Return vs Earnings Dates",
+  title: "CALL · Mean Return (Usual/Near Earnings)",
   facetField: "near_earn", facetOrder: nearOrder,
   dteOrder: DTE_ORDER, logOrder: LOG_ORDER
 }));

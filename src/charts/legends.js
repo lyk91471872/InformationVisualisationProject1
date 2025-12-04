@@ -52,9 +52,9 @@ export function sizeLegend(svg, {
     .attr("font-size", 12).attr("font-weight", 600)
     .text(label);
 
-  const cx = r(nMax), rowGap = 44;
+  const cx = r(nMax), rowGap = 24;
   const rows = g.selectAll("g.row").data(values).join("g")
-    .attr("class","row").attr("transform",(d,i)=>`translate(0,${i*rowGap})`);
+    .attr("class","row").attr("transform",(d,i)=>`translate(0,${i*(r(d)+cx)+8})`);
 
   rows.append("circle")
     .attr("cx", cx).attr("cy", 0).attr("r", d => r(d))
