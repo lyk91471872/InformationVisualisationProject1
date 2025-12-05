@@ -47,13 +47,18 @@ for (const col of numericCols) {
 
 ---
 
-## Pages
+## Dataset
+https://www.kaggle.com/datasets/kylegraupe/nvda-daily-option-chains-q1-2020-to-q4-2022
 
-- [Q1 · Moneyness × DTE → Expected Return](./q1_moneyness_dte)
-- [Q2 · Risk/Return Trade-off](./q2_risk_tradeoff)
-- [Q3 · Stability Over Time](./q3_stability_over_time)
-- [Q4 · Greeks vs Returns](./q4_greeks_vs_returns)
-- [Q5 · Earnings Effects](./q5_earnings_effects)
+This dataset is a combination of three years of NVIDIA ($NVDA) option chain end of day quotes ranging from 01-2020 to 12-2022. Each row represents the information associated with one contract's strike price and a given expiration date.
+
+---
+
+## Options
+Options are contracts betting on a specific stock. The price point we bet on is called **strike price**, and the cost of the option contract itself is called **premium**.
+* **calls** grant the right to **buy** 100 shares of the underlying stock at the strike price before expiration
+* **puts** grant the right to **sell** 100 shares of the underlying stock at the strike price before expiration
+
 
 ---
 
@@ -76,3 +81,13 @@ display(
   })
 );
 ```
+
+---
+
+## Pages
+
+- [Q1 · Moneyness × DTE → Expected Return](./q1_moneyness_dte)
+- [Q2 · Risk/Return Trade-off](./q2_risk_tradeoff)
+- [Q3 · Stability Over Time](./q3_stability_over_time)
+- [Q4 · Greeks vs Returns](./q4_greeks_vs_returns)
+- [Q5 · Earnings Effects](./q5_earnings_effects)

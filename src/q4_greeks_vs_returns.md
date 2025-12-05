@@ -1,11 +1,4 @@
 # Q4 · How are Greeks related to returns?
-Options with very low delta, calls especially are mostly losses, despite the few low-delta gains all provide high returns, but overall, delta alone is not a very good predictor.
-
-Options that yields more positive returns in general are
-* low |theta| calls
-* low gamma puts 
-* low vega calls
-* high vega puts
 
 **Delta: Δ = ∂V / ∂S**
 > Sensitivity of the option value to the underlying price.
@@ -44,3 +37,11 @@ display(
   })
 );
 ```
+
+Options with very low delta, calls especially are mostly losses, despite the few low-delta gains all provide high returns, but overall, delta alone is not a very good predictor.
+
+Options that yields more positive returns in general are
+* low |theta| calls
+* low gamma puts
+* low vega calls
+* high vega puts
