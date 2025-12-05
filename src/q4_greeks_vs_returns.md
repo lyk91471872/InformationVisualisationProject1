@@ -1,13 +1,19 @@
 # Q4 · How are Greeks related to returns?
 
-**Delta: Δ = ∂V / ∂S**
-> Sensitivity of the option value to the underlying price.
+**Premium: V**
+> The market value of the option.
 
-**Gamma: Γ = ∂²V / ∂S²**
-> Curvature of the option value with respect to the underlying price.
+**Stock Price: S**
+> The market value of the underlying stock.
+
+**Delta: Δ = ∂V / ∂S**
+> The option value moves up by ~$Δ when the stock moves up by $1.
+
+**Gamma: Γ = ∂²V / ∂S² = ∂Δ / ∂S**
+> Δ moves up by ~Γ when the stock moves up by $1.
 
 **Theta: Θ = ∂V / ∂t**
-> Sensitivity of the option value to the passage of time.
+> The option value changes by ~$Θ tomorrow if everything else stays the same.
 
 **Vega: ν = ∂V / ∂σ**
 > Sensitivity of the option value to volatility.
@@ -15,7 +21,7 @@
 **Implied Volatility: IV = σ**
 > The volatility value that makes the model price match the market price.
 
-We visualize CALL options in a 3D scatter (θ, Δ, Γ) and encode payoff as color and size:
+We visualize CALL options in a 3D (θ, Δ, Γ) bubble plot and encode payoff as color and size:
 
 ```js
 import { renderGreeks3DOptions } from "./charts/index.js";

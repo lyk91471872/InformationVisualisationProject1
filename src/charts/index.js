@@ -732,8 +732,7 @@ export function renderGreeks3DOptions(
 
     const pre = d3
       .select(container)
-      .append("pre")
-      .lower()
+      .append("pre")//.lower() // prepend
       .style("marginTop", "8px")
       .style("font-size", "11px")
       .style("max-height", "160px")

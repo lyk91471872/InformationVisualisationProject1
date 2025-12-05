@@ -93,7 +93,7 @@ export function strikeMap({
     .attr("text-anchor", "middle")
     .attr("font-weight", 600)
     .attr("font-size", 16)
-    .text("Strike surface K = S · e^m (heatmap + binned grid)");
+    .text("Strike surface K = S · e^m");
 
   // continuous heatmap
   const heat = root.append("g");
