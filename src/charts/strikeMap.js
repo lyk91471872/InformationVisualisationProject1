@@ -174,6 +174,7 @@ export function strikeMap({
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
         .attr("font-size", 9)
+        .attr("color", "#000")
         .text(kRounded);
     }
   }

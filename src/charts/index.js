@@ -134,8 +134,8 @@ export function renderGreeks3DOptions(
     .range([0.1, 10]);
 
   const fmtGreek = d3.format(".3f");
-  const fmtReturn = d3.format("+.3f");
-  const fmtIV = d3.format(".3f");
+  const fmtReturn = d3.format("+.2%");
+  const fmtIV = d3.format(".2%");
 
   // === 3. 3D helpers ===
   function rotateY([x, y, z], angle) {
@@ -271,9 +271,8 @@ export function renderGreeks3DOptions(
     .attr("x", 0)
     .attr("y", 0)
     .attr("fill", "white")
-    .attr("font-size", 12)
-    .attr("font-weight", "bold")
-    .text("Encoding");
+    .attr("font-size", 11)
+    .text("Color: gain/loss");
 
   let ly = 18;
 
@@ -282,7 +281,7 @@ export function renderGreeks3DOptions(
     .append("circle")
     .attr("cx", 8)
     .attr("cy", 6)
-    .attr("r", 5)
+    .attr("r", 3)
     .attr("fill", "#6DFFC4");
   colorLegend
     .append("text")
@@ -297,7 +296,7 @@ export function renderGreeks3DOptions(
     .append("circle")
     .attr("cx", 8)
     .attr("cy", 6)
-    .attr("r", 5)
+    .attr("r", 3)
     .attr("fill", "#F3A0F4");
   colorLegend2
     .append("text")
@@ -307,11 +306,11 @@ export function renderGreeks3DOptions(
     .attr("font-size", 11)
     .text("Return < 0 (loss)");
 
-  ly += 40;
+  ly += 64;
 
-  const rqSmall = d3.quantile(absReturns, 0.25) || 0.1;
-  const rqMid = d3.quantile(absReturns, 0.5) || 0.5;
-  const rqLarge = d3.quantile(absReturns, 0.9) || maxAbsReturn;
+  const rqSmall = 1;
+  const rqMid = 4;
+  const rqLarge = 8;
 
   legend
     .append("text")
@@ -319,11 +318,11 @@ export function renderGreeks3DOptions(
     .attr("y", ly)
     .attr("fill", "white")
     .attr("font-size", 11)
-    .text("|Return| at expiry");
+    .text("Size: |Return| at expiry");
 
   const sizeLegend = legend
     .append("g")
-    .attr("transform", `translate(0, ${ly + 6})`);
+    .attr("transform", `translate(0, ${ly})`);
 
   const sizeSamples = [
     { label: fmtReturn(rqSmall), r: rScale(rqSmall) },
@@ -350,7 +349,7 @@ export function renderGreeks3DOptions(
       .attr("font-size", 10)
       .text(s.label);
 
-    sy += s.r * 2 + 6;
+    sy += s.r * 2 + 8;
   });
 
   ly += 60;
@@ -476,12 +475,12 @@ export function renderGreeks3DOptions(
     const visiblePoints = points.filter(d => d.depth > 0.1);
 
     // Define this OUTSIDE the render function (along with baseY, etc.)
-    // let hoveredDatum = null; 
+    // let hoveredDatum = null;
 
     // Inside render():
     circles = pointGroup
       .selectAll("circle")
-      .data(visiblePoints) 
+      .data(visiblePoints)
       .join(
         enter =>
           enter
@@ -531,7 +530,7 @@ export function renderGreeks3DOptions(
       .attr("cy", d => d.proj.sy)
       .attr("r", d => d.baseRadius)
       // Check for match using the data object itself
-      .attr("fill", d => 
+      .attr("fill", d =>
         d.datum === hoveredDatum ? "#ffffff" : color(d.datum)
       )
       .attr("fill-opacity", d => {
@@ -582,7 +581,8 @@ export function renderGreeks3DOptions(
       .style("display", "flex")
       .style("alignItems", "center")
       .style("gap", "0.25rem")
-      .style("font-size", "12px");
+      .style("font-size", "12px")
+      .style("color", "#888");
 
     wrap.append("span").text(labelText);
 
@@ -743,7 +743,7 @@ export function renderGreeks3DOptions(
 
     pre.text(
       [
-        `Outliers (theta/gamma) excluded from axis scale: ${outliers.length}`,
+        `Outliers (theta/gamma/vega) excluded from axis scale: ${outliers.length}`,
         "",
         ...outliers.slice(0, 50).map(d =>
           [
