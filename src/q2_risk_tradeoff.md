@@ -12,8 +12,4 @@ const clean = q2.filter(d => +d.n>0 && Number.isFinite(+d.std_return) && Number.
 
 display(renderRiskReturnScatter(clean.filter(d=>d.option_type==="CALL"), { title: "CALL · risk vs return" }));
 display(renderRiskReturnScatter(clean.filter(d=>d.option_type==="PUT"),  { title: "PUT · risk vs return"  }));
-
-const nvdaHistoryUrl = await FileAttachment("nvda_history.png").url();
-display(html`<img src="${nvdaHistoryUrl}" style="width:3000px;">`);
 ```
-Yahoo Finance. (2022). NVIDIA Corporation (NVDA) historical price chart [Screenshot]. Retrieved from https://finance.yahoo.com/quote/NVDA

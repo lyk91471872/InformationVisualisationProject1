@@ -37,5 +37,7 @@ display(renderBubbleChart(puts, {
 }));
 
 
-
+const nvdaHistoryUrl = await FileAttachment("nvda_history.png").url();
+display(html`<img src="${nvdaHistoryUrl}" style="width:3000px;">`);
 ```
+Yahoo Finance. (2022). NVIDIA Corporation (NVDA) historical price chart [Screenshot]. Retrieved from https://finance.yahoo.com/quote/NVDA
